@@ -31,7 +31,7 @@ jobs:
 
       - name: Create branch
         run: |
-          git checkout -b rss-feed-$(date +'%Y-%m-%d hh:mm:ss')
+          git checkout -b rss-feed-$(date +'%Y%m%d%H%M%S')
 
       - name: Generate RSS feed
         run: |
@@ -41,4 +41,4 @@ jobs:
         run: |
           git add rss.xml
           git commit -m "Generate RSS feed"
-          git push origin rss-feed-$(date +'%Y-%m-%d hh:mm:ss')
+          git push origin rss-feed-$(date +'%Y%m%d%H%M%S')
