@@ -29,8 +29,10 @@ jobs:
         run: |
           poetry install
 
-      - name: Create branch
+      - name: Setup git
         run: |
+          git config user.email "workflow@github.com"
+          git config user.name "GitHub Action"
           git checkout -b rss-feed-$(date +'%Y%m%d%H%M%S')
 
       - name: Generate RSS feed
