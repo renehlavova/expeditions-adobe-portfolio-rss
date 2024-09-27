@@ -43,4 +43,4 @@ jobs:
         run: |
           git add rss.xml
           git commit -m "Generate RSS feed"
-          git push origin rss-feed-$(date +'%Y%m%d%H%M%S')
+          git push -u origin $(git branch --show-current)
