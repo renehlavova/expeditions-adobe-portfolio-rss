@@ -1,0 +1,44 @@
+name: Generate RSS feed
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.12"
+
+      - name: Install pipx
+        uses: CfirTsabari/actions-pipx@v1
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Create branch
+        run: |
+          git checkout -b rss-feed-$(date +'%Y-%m-%d hh:mm:ss')
+
+      - name: Generate RSS feed
+        run: |
+          poetry run python generate_rss_feed.py
+
+      - name: Commit and push changes
+        run: |
+          git add rss.xml
+          git commit -m "Generate RSS feed"
+          git push origin rss-feed-$(date +'%Y-%m-%d hh:mm:ss')
