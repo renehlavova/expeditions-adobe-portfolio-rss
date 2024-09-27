@@ -8,6 +8,8 @@ TITLE = "Rene Hlavova: Expeditions"
 AUTHOR = "Rene Hlavova"
 SITE_URL = "https://expeditions.renehlavova.com/"
 
+DEFAULT_IMAGE = "//unsplash.it/200"
+
 
 def extract_site_data() -> BeautifulSoup:
     result = httpx.get("https://expeditions.renehlavova.com/")
@@ -37,6 +39,8 @@ def parse_posts(soup: BeautifulSoup) -> list[dict]:
 
     for post in posts:
         path = post["href"]
+        if isinstance(path, list):
+            raise RuntimeError("Multiple hrefs found for a single post.")
         post_url = urljoin(SITE_URL, path)
 
         post_title_raw = post.select_one("div.title")
@@ -50,9 +54,16 @@ def parse_posts(soup: BeautifulSoup) -> list[dict]:
         post_tags = post_tags_raw.text if post_tags_raw else "No tags"
 
         post_image_raw = post.select_one("img")
-        post_image = (
-            post_image_raw["data-src"] if post_image_raw else "//unsplash.it/200"
-        )
+        if post_image_raw is None:
+            post_image = DEFAULT_IMAGE
+        else:
+            post_image_srcset = post_image_raw["data-srcset"]
+            if post_image_srcset is None:
+                post_image = DEFAULT_IMAGE
+            elif isinstance(post_image_srcset, str):
+                post_image = post_image_srcset.split(" ")[0]
+            else:
+                post_image = DEFAULT_IMAGE
 
         post_text = httpx.get(post_url)
         post_text_soup = BeautifulSoup(post_text.text, "html.parser")
