@@ -8,7 +8,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  deploy:
+  generate_rss:
     runs-on: ubuntu-latest
 
     steps:
