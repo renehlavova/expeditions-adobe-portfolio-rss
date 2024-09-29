@@ -12,11 +12,13 @@ DEFAULT_IMAGE = "//unsplash.it/200"
 
 
 def extract_site_data() -> BeautifulSoup:
+    """Extracts data from the Expeditions website."""
     result = httpx.get("https://expeditions.renehlavova.com/")
     return BeautifulSoup(result.text, "html.parser")
 
 
 def parse_site_metadata(soup: BeautifulSoup) -> dict:
+    """Parses metadata from the Expeditions website - title, link, description."""
     description_raw = soup.select_one("div[data-context='page.masthead'] p.main-text")
 
     if description_raw:
@@ -30,9 +32,7 @@ def parse_site_metadata(soup: BeautifulSoup) -> dict:
 
 
 def parse_posts(soup: BeautifulSoup) -> list[dict]:
-    """
-    Extracts data from the Expeditions website for RSS feed.
-    """
+    """Parses individual posts from the Expeditions website."""
     data = []
 
     posts = soup.select("a.project-cover")
@@ -92,6 +92,7 @@ def parse_posts(soup: BeautifulSoup) -> list[dict]:
 
 
 def generate_rss_feed(site_metadata: dict, posts: list[dict]) -> str:
+    """Generates an RSS feed from the site metadata and posts."""
     rss_feed = f"""<?xml version="1.0" encoding="UTF-8" ?>
     <rss version="2.0">
         <channel>
