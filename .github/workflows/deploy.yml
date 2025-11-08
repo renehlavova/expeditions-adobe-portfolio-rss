@@ -55,5 +55,5 @@ jobs:
           curl -X POST \
             -H "Content-Type: application/json" \
             -d "{\"guid\": \"${LATEST_GUID}\",\"title\":\"${LATEST_TITLE}\"}" \
-            https://hook.we.make.com/upk5sipe2loms1gc0echbjz3g3qui2je \
+            ${{secrets.MAKE_WEBHOOK_URL}} \
             -w "\n✅ Webhook sent with GUID: ${LATEST_GUID}\n"
