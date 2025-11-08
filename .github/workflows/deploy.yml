@@ -4,11 +4,9 @@ on:
   pull_request:
     branches:
       - master
-      - feat/**
   push:
     branches:
       - master
-      - feat/**
 
 jobs:
   deploy:
