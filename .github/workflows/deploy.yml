@@ -31,3 +31,28 @@ jobs:
             --project-name rss-expeditions-renehlavova \
             --branch "${{github.ref_name == 'master' && 'main' || github.ref_name}}" \
             .
+
+      - name: Extract latest post GUID and trigger Make scenario
+        if: github.ref == 'refs/heads/master'
+        run: |
+          # Ensure rss.xml exists
+          if [ ! -f rss.xml ]; then
+            echo "❌ rss.xml not found in repo root."
+            exit 1
+          fi
+
+          # Extract latest GUID and Title
+          LATEST_GUID=$(grep -m1 '<guid' rss.xml | sed -E 's/.*<guid[^>]*>([^<]+)<\/guid>.*/\1/')
+          LATEST_TITLE=$(grep -m1 '<title>' rss.xml | sed -E 's/.*<title>([^<]+)<\/title>.*/\1/')
+
+          if [ -z "$LATEST_GUID" ]; then
+            echo "❌ No <guid> found in rss.xml"
+            exit 1
+          fi
+
+          echo "🚀 Sending webhook to Make..."
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"guid\": \"${LATEST_GUID}\",\"title\":\"${LATEST_TITLE}\"}" \
+            ${{secrets.MAKE_WEBHOOK_URL}} \
+            -w "\n✅ Webhook sent with GUID: ${LATEST_GUID}\n"
