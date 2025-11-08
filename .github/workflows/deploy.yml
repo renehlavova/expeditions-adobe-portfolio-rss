@@ -33,6 +33,7 @@ jobs:
             .
 
       - name: Extract latest post GUID and trigger Make scenario
+        if: github.ref == 'refs/heads/master'
         run: |
           # Ensure rss.xml exists
           if [ ! -f rss.xml ]; then
