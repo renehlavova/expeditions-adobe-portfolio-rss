@@ -10,11 +10,28 @@ SITE_URL = "https://expeditions.renehlavova.com/"
 
 DEFAULT_IMAGE = "//unsplash.it/200"
 
+# The site's CDN returns 403 for the default "python-httpx" user agent from
+# datacenter IPs (e.g. GitHub Actions runners), so send browser-like headers.
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+
+def fetch(url: str) -> httpx.Response:
+    """GETs a URL with browser-like headers and raises on HTTP errors."""
+    response = httpx.get(url, headers=HEADERS, follow_redirects=True, timeout=30)
+    response.raise_for_status()
+    return response
+
 
 def extract_site_data() -> BeautifulSoup:
     """Extracts data from the Expeditions website."""
-    result = httpx.get(SITE_URL, follow_redirects=True, timeout=30)
-    result.raise_for_status()
+    result = fetch(SITE_URL)
     soup = BeautifulSoup(result.text, "html.parser")
     if not soup.select("a.project-cover"):
         raise RuntimeError(
@@ -78,7 +95,7 @@ def parse_posts(soup: BeautifulSoup) -> list[dict]:
             else:
                 post_image = DEFAULT_IMAGE
 
-        post_text = httpx.get(post_url)
+        post_text = fetch(post_url)
         post_text_soup = BeautifulSoup(post_text.text, "html.parser")
         post_description_raw = post_text_soup.select_one(
             "div.page-content div.rich-text"
