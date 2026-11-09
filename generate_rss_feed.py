@@ -13,16 +13,29 @@ DEFAULT_IMAGE = "//unsplash.it/200"
 
 def extract_site_data() -> BeautifulSoup:
     """Extracts data from the Expeditions website."""
-    result = httpx.get("https://expeditions.renehlavova.com/")
-    return BeautifulSoup(result.text, "html.parser")
+    result = httpx.get(SITE_URL, follow_redirects=True, timeout=30)
+    result.raise_for_status()
+    soup = BeautifulSoup(result.text, "html.parser")
+    if not soup.select("a.project-cover"):
+        raise RuntimeError(
+            f"No posts found at {result.url} (HTTP {result.status_code}). "
+            f"Page may be a bot challenge or the layout changed. "
+            f"Start of response: {result.text[:300]!r}"
+        )
+    return soup
 
 
 def parse_site_metadata(soup: BeautifulSoup) -> dict:
     """Parses metadata from the Expeditions website - title, link, description."""
     description_raw = soup.select_one("div[data-context='page.masthead'] p.main-text")
+    meta_description = soup.select_one("meta[name='description']")
 
     if description_raw:
         description = description_raw.text
+    elif meta_description and meta_description.get("content"):
+        description = str(meta_description["content"])
+    else:
+        description = TITLE
 
     return {
         "title": TITLE,
